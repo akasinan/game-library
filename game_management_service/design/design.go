@@ -1,7 +1,7 @@
 package design
 
 import (
-	shareddesign "github.com/sinan/game-library/shared/design"
+	shareddesign "github.com/akasinan/game-library/shared/design"
 
 	microerrors "github.com/flexera/micro/errors"
 	. "goa.design/goa/v3/dsl"
@@ -137,7 +137,7 @@ var GameParameters = Type("GameParameters", func() {
 		Example(shareddesign.GenreExample)
 	})
 	Field(5, "platforms", ArrayOf(String), "A list of Platforms the game has been released on. Consoles/PC etc.", func() {
-		Example(shareddesign.GenreExample)
+		Example(shareddesign.PlatformExample)
 	})
 	Field(6, "developer", String, "Name of Game’s developer", func() {
 		Example(shareddesign.DeveloperExample)

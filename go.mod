@@ -1,4 +1,4 @@
-module game_library
+module github.com/akasinan/game-library
 
 go 1.17
 
