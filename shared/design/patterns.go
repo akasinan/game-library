@@ -21,4 +21,8 @@ const (
 
 	// PublisherExample for convenience
 	PublisherExample = "some-publisher"
+
+	GameFilterExample = `(name co 'Mario' or name co 'Super Mario 64')`
+
+	GameFilterMinLength = 1
 )

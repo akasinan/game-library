@@ -1,0 +1,666 @@
+openapi: 3.0.3
+info:
+    title: Game Library Service
+    description: A microservice allowing us to create add new games, retrieve games, update game information and delete games
+    version: "1.0"
+servers:
+    - url: http://localhost:80
+      description: Default server for game_library_service
+paths:
+    /games:
+        get:
+            tags:
+                - GameManagement
+            summary: index GameManagement
+            description: Retrieve a list of all games from the database. Filter will be used to filter out games for searching by values like name. Can be used to retrieve a game’s ID to use the Show endpoint.
+            operationId: GameManagement#index
+            parameters:
+                - name: filter
+                  in: query
+                  description: "Filter for filtering list of games returned. \nThe following filters are supported:\n| Filter | Description | Allowed Operator | Behavior | Example |\n| --- | ---| --- | --- | --- |\n| name | Filters on the game name | co | Contains - The entire operator value must be a substring of the attribute value for a match. |  name co 'Remaster' |\n|\t|\t| eq | Equal - The attribute and operator values must be identical for a match. | name eq 'Super Mario 64'  |\n* All operators are case-sensitive and only lowercase is allowed. \n\t\te.g: \n\t\t\tvalid\t: eq\n\t\t\tinvalid : EQ\n\n* Filters can be combined using the and/or logical operator. \n\t\te.g: (name co 'Mario' or name eq 'Super Mario 64')\n\t\n* When used as a query string, the filter parameter value must be URL encoded.\t\t \n\t\te.g: ?filter=(name%20co%20'Mario'%20or%20name%20eq%20'Super Mario 64')\n\n\tWhen using cURL, the same expression can be URL encoded as follows: \n\t\t$ curl -i -H \"$AUTH_HEADER\" {$BASE_URL}/games \\\n\t\t\t-G --data-urlencode \"filter=(name co 'Mario' or name eq 'Super Mario 64')\"\n"
+                  allowEmptyValue: true
+                  required: true
+                  schema:
+                    type: string
+                    description: "Filter for filtering list of games returned. \nThe following filters are supported:\n| Filter | Description | Allowed Operator | Behavior | Example |\n| --- | ---| --- | --- | --- |\n| name | Filters on the game name | co | Contains - The entire operator value must be a substring of the attribute value for a match. |  name co 'Remaster' |\n|\t|\t| eq | Equal - The attribute and operator values must be identical for a match. | name eq 'Super Mario 64'  |\n* All operators are case-sensitive and only lowercase is allowed. \n\t\te.g: \n\t\t\tvalid\t: eq\n\t\t\tinvalid : EQ\n\n* Filters can be combined using the and/or logical operator. \n\t\te.g: (name co 'Mario' or name eq 'Super Mario 64')\n\t\n* When used as a query string, the filter parameter value must be URL encoded.\t\t \n\t\te.g: ?filter=(name%20co%20'Mario'%20or%20name%20eq%20'Super Mario 64')\n\n\tWhen using cURL, the same expression can be URL encoded as follows: \n\t\t$ curl -i -H \"$AUTH_HEADER\" {$BASE_URL}/games \\\n\t\t\t-G --data-urlencode \"filter=(name co 'Mario' or name eq 'Super Mario 64')\"\n"
+                    example: (name co 'Mario' or name co 'Super Mario 64')
+                    minLength: 1
+                  example: (name co 'Mario' or name co 'Super Mario 64')
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GameList'
+                            example:
+                                values:
+                                    - created_at: "1986-10-04T16:42:58Z"
+                                      developer: some-developer
+                                      genre:
+                                        - some-genre
+                                        - some-genre
+                                        - some-genre
+                                      id: 1234
+                                      name: some-game
+                                      platforms:
+                                        - some-platform
+                                        - some-platform
+                                      publisher: some-publisher
+                                      release_date: "1989-07-10T12:30:06Z"
+                                      updated_at: "1983-04-01T02:08:11Z"
+                                    - created_at: "1986-10-04T16:42:58Z"
+                                      developer: some-developer
+                                      genre:
+                                        - some-genre
+                                        - some-genre
+                                        - some-genre
+                                      id: 1234
+                                      name: some-game
+                                      platforms:
+                                        - some-platform
+                                        - some-platform
+                                      publisher: some-publisher
+                                      release_date: "1989-07-10T12:30:06Z"
+                                      updated_at: "1983-04-01T02:08:11Z"
+                "400":
+                    description: 'bad_request: Bad Request response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "422":
+                    description: 'unprocessable_entity: Unprocessable Entity response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "502":
+                    description: 'bad_gateway: Bad Gateway response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        post:
+            tags:
+                - GameManagement
+            summary: create GameManagement
+            description: Creates a game in the postgres database.
+            operationId: GameManagement#create
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateRequestBody'
+                        example:
+                            developer: some-developer
+                            genre:
+                                - some-genre
+                                - some-genre
+                                - some-genre
+                            name: some-game
+                            platforms:
+                                - some-platform
+                                - some-platform
+                            publisher: some-publisher
+                            release_date: "1994-05-17T20:31:16Z"
+            responses:
+                "201":
+                    description: The game was created successfully
+                    headers:
+                        Location:
+                            description: Location of the newly created game
+                            schema:
+                                type: string
+                                description: Location of the newly created game
+                                example: Incidunt exercitationem.
+                            example: Nihil qui.
+                "400":
+                    description: 'bad_request: Bad Request response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "409":
+                    description: 'conflict: Conflict response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "502":
+                    description: 'bad_gateway: Bad Gateway response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+    /games/{id}:
+        delete:
+            tags:
+                - GameManagement
+            summary: delete GameManagement
+            description: Delete a game from the database by ID. Could be used by site admins in case of an upcoming game’s cancellation or a mistake.
+            operationId: GameManagement#delete
+            parameters:
+                - name: id
+                  in: path
+                  description: ID of the game in the Postgres database
+                  required: true
+                  schema:
+                    type: integer
+                    description: ID of the game in the Postgres database
+                    example: 1234
+                    minimum: 1
+                  example: 1234
+            responses:
+                "204":
+                    description: No Content response.
+                "400":
+                    description: 'bad_request: Bad Request response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "502":
+                    description: 'bad_gateway: Bad Gateway response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        get:
+            tags:
+                - GameManagement
+            summary: show GameManagement
+            description: Retrieve and show a game from the database. Will be used to show a game’s full profile when on the game’s page on the site.
+            operationId: GameManagement#show
+            parameters:
+                - name: id
+                  in: path
+                  description: The ID of the game
+                  required: true
+                  schema:
+                    type: integer
+                    description: The ID of the game
+                    example: 1234
+                    minimum: 1
+                  example: 1234
+            responses:
+                "200":
+                    description: OK response.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Game'
+                            example:
+                                created_at: "1998-09-13T01:16:34Z"
+                                developer: some-developer
+                                genre:
+                                    - some-genre
+                                    - some-genre
+                                id: 1234
+                                name: some-game
+                                platforms:
+                                    - some-platform
+                                    - some-platform
+                                publisher: some-publisher
+                                release_date: "1978-12-22T12:13:10Z"
+                                updated_at: "1987-08-12T22:17:41Z"
+                "400":
+                    description: 'bad_request: Bad Request response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "502":
+                    description: 'bad_gateway: Bad Gateway response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+        put:
+            tags:
+                - GameManagement
+            summary: update GameManagement
+            description: Update a game’s fields in the database. Would be used if new information on the game was added such as finalized release dates, ports to new platforms etc.
+            operationId: GameManagement#update
+            parameters:
+                - name: id
+                  in: path
+                  description: ID of the game in the Postgres database
+                  required: true
+                  schema:
+                    type: integer
+                    description: ID of the game in the Postgres database
+                    example: 1234
+                    minimum: 1
+                  example: 1234
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateRequestBody'
+                        example:
+                            developer: some-developer
+                            genre:
+                                - some-genre
+                                - some-genre
+                                - some-genre
+                            platforms:
+                                - some-platform
+                                - some-platform
+                                - some-platform
+                                - some-platform
+                            publisher: some-publisher
+                            release_date: "1971-01-04T03:55:57Z"
+            responses:
+                "204":
+                    description: No Content response.
+                "400":
+                    description: 'bad_request: Bad Request response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "401":
+                    description: 'unauthorized: Unauthorized response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "403":
+                    description: 'forbidden: Forbidden response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "404":
+                    description: 'not_found: Not Found response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "500":
+                    description: 'internal_error: Internal Server Error response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+                "502":
+                    description: 'bad_gateway: Bad Gateway response.'
+                    content:
+                        application/vnd.goa.error:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+components:
+    schemas:
+        CreateRequestBody:
+            type: object
+            properties:
+                developer:
+                    type: string
+                    description: Name of Game’s developer
+                    example: some-developer
+                genre:
+                    type: array
+                    items:
+                        type: string
+                        example: some-genre
+                    description: An array of genres the game falls under
+                    example:
+                        - some-genre
+                        - some-genre
+                        - some-genre
+                        - some-genre
+                name:
+                    type: string
+                    description: Name of the game
+                    example: some-game
+                platforms:
+                    type: array
+                    items:
+                        type: string
+                        example: some-platform
+                    description: A list of Platforms the game has been released on. Consoles/PC etc.
+                    example:
+                        - some-platform
+                        - some-platform
+                        - some-platform
+                        - some-platform
+                publisher:
+                    type: string
+                    description: Name of Game’s publisher
+                    example: some-publisher
+                release_date:
+                    type: string
+                    description: Initial release date of game
+                    example: "1986-11-05T08:35:23Z"
+                    format: date-time
+            example:
+                developer: some-developer
+                genre:
+                    - some-genre
+                    - some-genre
+                    - some-genre
+                    - some-genre
+                name: some-game
+                platforms:
+                    - some-platform
+                    - some-platform
+                    - some-platform
+                publisher: some-publisher
+                release_date: "1991-04-21T02:56:36Z"
+            required:
+                - name
+        Error:
+            type: object
+            properties:
+                fault:
+                    type: boolean
+                    description: Is the error a server-side fault?
+                    example: true
+                id:
+                    type: string
+                    description: ID is a unique identifier for this particular occurrence of the problem.
+                    example: 123abc
+                message:
+                    type: string
+                    description: Message is a human-readable explanation specific to this occurrence of the problem.
+                    example: parameter 'p' must be an integer
+                name:
+                    type: string
+                    description: Name is the name of this class of errors.
+                    example: bad_request
+                temporary:
+                    type: boolean
+                    description: Is the error temporary?
+                    example: true
+                timeout:
+                    type: boolean
+                    description: Is the error a timeout?
+                    example: false
+            example:
+                id: 3F1FKVRR
+                message: Value of ID must be an integer
+                name: bad_request
+            required:
+                - name
+                - id
+                - message
+                - temporary
+                - timeout
+                - fault
+        Game:
+            type: object
+            properties:
+                created_at:
+                    type: string
+                    description: Game creation timestamp
+                    example: "1996-11-27T09:40:58Z"
+                    format: date-time
+                developer:
+                    type: string
+                    description: Name of Game’s developer
+                    example: some-developer
+                genre:
+                    type: array
+                    items:
+                        type: string
+                        example: some-genre
+                    description: An array of genres the game falls under
+                    example:
+                        - some-genre
+                        - some-genre
+                id:
+                    type: integer
+                    description: ID of the game in the Postgres database
+                    example: 1234
+                    minimum: 1
+                name:
+                    type: string
+                    description: Name of the game
+                    example: some-game
+                platforms:
+                    type: array
+                    items:
+                        type: string
+                        example: some-platform
+                    description: A list of Platforms the game has been released on. Consoles/PC etc.
+                    example:
+                        - some-platform
+                        - some-platform
+                        - some-platform
+                publisher:
+                    type: string
+                    description: Name of Game’s publisher
+                    example: some-publisher
+                release_date:
+                    type: string
+                    description: Initial release date of game
+                    example: "1988-07-09T11:51:44Z"
+                    format: date-time
+                updated_at:
+                    type: string
+                    description: Game last updated timestamp
+                    example: "1979-06-06T10:27:15Z"
+                    format: date-time
+            example:
+                created_at: "1984-09-30T06:33:13Z"
+                developer: some-developer
+                genre:
+                    - some-genre
+                    - some-genre
+                id: 1234
+                name: some-game
+                platforms:
+                    - some-platform
+                    - some-platform
+                publisher: some-publisher
+                release_date: "1992-06-12T15:15:16Z"
+                updated_at: "1972-04-01T11:23:26Z"
+            required:
+                - id
+                - name
+                - created_at
+        GameCollection:
+            type: array
+            items:
+                $ref: '#/components/schemas/Game'
+            example:
+                - created_at: "1986-10-04T16:42:58Z"
+                  developer: some-developer
+                  genre:
+                    - some-genre
+                    - some-genre
+                    - some-genre
+                  id: 1234
+                  name: some-game
+                  platforms:
+                    - some-platform
+                    - some-platform
+                  publisher: some-publisher
+                  release_date: "1989-07-10T12:30:06Z"
+                  updated_at: "1983-04-01T02:08:11Z"
+                - created_at: "1986-10-04T16:42:58Z"
+                  developer: some-developer
+                  genre:
+                    - some-genre
+                    - some-genre
+                    - some-genre
+                  id: 1234
+                  name: some-game
+                  platforms:
+                    - some-platform
+                    - some-platform
+                  publisher: some-publisher
+                  release_date: "1989-07-10T12:30:06Z"
+                  updated_at: "1983-04-01T02:08:11Z"
+        GameList:
+            type: object
+            properties:
+                values:
+                    $ref: '#/components/schemas/GameCollection'
+            example:
+                values:
+                    - created_at: "1986-10-04T16:42:58Z"
+                      developer: some-developer
+                      genre:
+                        - some-genre
+                        - some-genre
+                        - some-genre
+                      id: 1234
+                      name: some-game
+                      platforms:
+                        - some-platform
+                        - some-platform
+                      publisher: some-publisher
+                      release_date: "1989-07-10T12:30:06Z"
+                      updated_at: "1983-04-01T02:08:11Z"
+                    - created_at: "1986-10-04T16:42:58Z"
+                      developer: some-developer
+                      genre:
+                        - some-genre
+                        - some-genre
+                        - some-genre
+                      id: 1234
+                      name: some-game
+                      platforms:
+                        - some-platform
+                        - some-platform
+                      publisher: some-publisher
+                      release_date: "1989-07-10T12:30:06Z"
+                      updated_at: "1983-04-01T02:08:11Z"
+            required:
+                - values
+        UpdateRequestBody:
+            type: object
+            properties:
+                developer:
+                    type: string
+                    description: Name of Game’s developer
+                    example: some-developer
+                genre:
+                    type: array
+                    items:
+                        type: string
+                        example: some-genre
+                    description: An array of genres the game falls under
+                    example:
+                        - some-genre
+                        - some-genre
+                platforms:
+                    type: array
+                    items:
+                        type: string
+                        example: some-platform
+                    description: A list of Platforms the game has been released on. Consoles/PC etc.
+                    example:
+                        - some-platform
+                        - some-platform
+                        - some-platform
+                        - some-platform
+                publisher:
+                    type: string
+                    description: Name of Game’s publisher
+                    example: some-publisher
+                release_date:
+                    type: string
+                    description: Initial release date of game
+                    example: "2000-11-26T11:58:57Z"
+                    format: date-time
+            example:
+                developer: some-developer
+                genre:
+                    - some-genre
+                    - some-genre
+                platforms:
+                    - some-platform
+                    - some-platform
+                publisher: some-publisher
+                release_date: "1981-07-11T16:27:54Z"
+tags:
+    - name: GameManagement
